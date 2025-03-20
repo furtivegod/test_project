@@ -5,9 +5,11 @@ const express = require('express');
 const cors = require('cors');
 const {syncGoogleDriveFiles} = require('./services/syncService');
 const {syncSlackData} = require('./services/syncService');
+const {syncJiraData} = require('./services/syncService');
 const {getSlackChannels} = require('./controllers/slackController');
 const {getMessagesForChannel} = require('./controllers/slackController');
 const checkToken = require('./middleware/checkToken');
+const { getJiraIssues } = require('./controllers/jiraController');
 const app = express();
 app.use(express.json());
 
@@ -24,13 +26,14 @@ const { getFiles } = require('./controllers/filesController');
 
 syncGoogleDriveFiles();
 syncSlackData();
-
+syncJiraData();
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/files', checkToken, getFiles);
 app.post('/api/download', checkToken, downloadFileController);
 app.get('/api/slack-channels', checkToken, getSlackChannels);
 app.get('/api/slack-channels/:channelId', checkToken, getMessagesForChannel);
+app.get('/api/jira-issues', checkToken, getJiraIssues);
 
 // Default route
 app.get('/', (req, res) => res.json({ message: 'Enterprise Data Aggregator Backend 🚀' }));

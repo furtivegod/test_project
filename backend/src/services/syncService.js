@@ -3,6 +3,7 @@ const cron = require('node-cron');
 const { listFiles } = require('../utils/googleDriveServiceAccount');
 const { saveFilesToSupabase } = require('../controllers/filesController'); // Supabase function to save files
 const { fetchChannels, fetchMessages, saveChannelsToSupabase, saveMessagesToSupabase } = require('./slackService');
+const { fetchJiraIssues, saveJiraIssuesToSupabase } = require('./jiraService');
 
 // Sync Google Drive files to Supabase every hour
 const syncGoogleDriveFiles = () => {
@@ -48,5 +49,19 @@ const syncSlackData = () => {
   });
 };
 
+const syncJiraData = () => {
+  // Sync Jira issues every hour
+  cron.schedule('10 * * * * *', async () => {
+    console.log('Syncing Jira issues...');
+    try {
+      const issues = await fetchJiraIssues();
+      await saveJiraIssuesToSupabase(issues);
+
+      console.log('Jira issues synced successfully');
+    } catch (error) {
+      console.error('Error syncing Jira issues:', error);
+    }
+  });
+};
 // Export the function so it can be used in app.js
-module.exports = { syncGoogleDriveFiles, syncSlackData };
+module.exports = { syncGoogleDriveFiles, syncSlackData, syncJiraData };
